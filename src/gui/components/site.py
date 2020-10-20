@@ -1,5 +1,6 @@
 import tkinter as tk
 from .. import assets
+from . import imageLabel
 
 class Site:
     def __init__(self, window):
@@ -18,8 +19,12 @@ class Site:
         self.content.pack()
 
     def generateContent(self):
-        self.window.assets.loadImage(assets.content).place(self.content)
+        image = imageLabel.ImageLabel(self.content, icon = assets.content)
+        image.pack()
 
     def deactivate(self):
         for child in self.window.siteFrame.winfo_children():
             child.pack_forget()
+
+    def onEvent(self, e):
+        pass

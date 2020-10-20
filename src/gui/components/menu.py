@@ -1,5 +1,5 @@
 import tkinter as tk
-from .. import defaults
+from .. import defaults, assets
 from . import site
 from .sites import gallery, radon
 
@@ -10,7 +10,7 @@ class Menu:
     def generate(self):
         menubar = tk.Menu(self.window.gui)
         filemenu = tk.Menu(menubar, tearoff = 0)
-        filemenu.add_command(label = "Open")
+        filemenu.add_command(label = "Open", command = self.window.openImages)
 
         menubar.add_cascade(label = "File", menu = filemenu)
         menubar.add_command(label = "Gallery", command = lambda : self.window.setActiveSite(gallery.Gallery))

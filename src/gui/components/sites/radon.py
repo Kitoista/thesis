@@ -1,6 +1,6 @@
 import tkinter as tk
 from ... import assets, defaults
-from .. import site
+from .. import site, imageLabel
 
 class Radon(site.Site):
     def generateContent(self):
@@ -11,15 +11,19 @@ class Radon(site.Site):
         self.inputFrame.grid(row = 0, column = 0)
 
         self.arrowFrame = tk.Frame(self.workFrame)
-        self.workFrame.bind("<Button-1>", lambda a : print('clicked'))
         self.arrowFrame.grid(row = 0, column = 1)
 
         self.outputFrame = tk.Frame(self.workFrame)
         self.outputFrame.grid(row = 0, column = 2)
 
-        self.window.assets.loadImage(assets.placeholder).place(self.inputFrame)
-        self.window.assets.loadImage(assets.arrow, width = defaults.arrowSize["width"], height = defaults.arrowSize["height"]).place(self.arrowFrame)
-        self.window.assets.loadImage(assets.placeholder).place(self.outputFrame)
+        self.input = imageLabel.ImageLabel(self.inputFrame, icon = assets.placeholder)
+        self.input.pack()
+        self.arrow = imageLabel.ImageLabel(self.arrowFrame, icon = assets.arrow, width = defaults.arrowSize["width"], height = defaults.arrowSize["height"])
+        self.arrow.pack()
+        self.output = imageLabel.ImageLabel(self.outputFrame, icon = assets.placeholder)
+        self.output.pack()
+
+        self.arrow.bind('<Button-1>', lambda x : print('TRANSFORM'))
 
     def showImageOnLeft(self):
-        self.window.assets.loadImage().place(self.inputFrame)
+        assets.loadImage().place(self.inputFrame)

@@ -1,25 +1,29 @@
 import tkinter as tk
-from . import defaults, assets
-from .components import menu, site
+import threading
+from . import defaults, assets, event
+from .components import menu, site, status
 from .components.sites import gallery
 
-class Window:
+class Window(threading.Thread):
     title = "Képrekonstrukció textúrainformációk figyelembe vételével"
     activeSite = None
 
-    def __init__(self, app):
+    def init(self, app):
         self.app = app
         self.menu = menu.Menu(self)
-        self.assets = assets.AssetLoader()
+        self.status = status.Status(self)
 
-    def open(self):
+    def run(self):
         self.gui = tk.Tk()
         self.gui.title(self.title)
         self.gui.geometry("{}x{}".format(defaults.size["width"], defaults.size["height"]))
 
         self.menu.generate()
+        self.generateTopFrame()
         self.generateSiteFrame()
         self.generateBottomFrame()
+
+        self.status.generate()
 
         self.gui.mainloop()
 
@@ -38,4 +42,22 @@ class Window:
         self.bottomFrame = tk.Frame(self.gui)
         self.bottomFrame.pack(side = tk.BOTTOM, anchor = tk.SE)
 
-        tk.Label(self.bottomFrame, text = "made by: Krisztián Tóth", fg = "#555555").pack()
+        tk.Label(self.bottomFrame, text = "made by: Krisztián Tóth", fg = defaults.gray).pack()
+
+    def generateTopFrame(self):
+        self.topFrame = tk.Frame(self.gui, width = defaults.size["width"])
+        self.topFrame.pack(side = tk.TOP, anchor = tk.NW)
+
+    def openImages(self, *args):
+        images = assets.getImages()
+        if len(images) > 0:
+            self.app.images = images
+            self.triggerEvent(event.Event(event.ImagesUpdateEvent))
+
+    def updateSettingsStatus(self):
+        self.triggerEvent(event.Event(event.SettingsUpdatedEvent))
+
+    def triggerEvent(self, e):
+        self.status.onEvent(e)
+        if self.activeSite is not None:
+            self.activeSite.onEvent(e)

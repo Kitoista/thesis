@@ -9,33 +9,31 @@ arrowRight = '../assets/arrow-right.png'
 placeholder = '../assets/placeholder.png'
 content = '../assets/content.png'
 
-class AssetLoader:
-    def loadImage(self, filename=None, width=None, height=None):
-        width = width or defaults.imageSize["width"]
-        height = height or defaults.imageSize["height"]
+def loadImage(filename=None, width=None, height=None):
+    width = width or defaults.imageSize["width"]
+    height = height or defaults.imageSize["height"]
 
-        if filename is None:
-            filename = self.openfn()
+    if filename is None:
+        filename = getFilename()
 
-        img = Image.open(filename)
-        img = img.resize((width, height), Image.ANTIALIAS)
-        img = ImageTk.PhotoImage(img)
+    img = Image.open(filename)
+    img = img.resize((width, height), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(img)
 
-        return ImageAsset(img)
+    return img
 
-    def openfn(self):
-        filename = fileDialog.askopenfilename(title='open')
-        return filename
+def getFilename():
+    filename = fileDialog.askopenfilename(title='open')
+    return filename
 
+def getFilenames():
+    filenames = fileDialog.askopenfilenames(title='open')
+    return filenames
 
-class ImageAsset:
-    def __init__(self, image):
-        self.image = image
+def getImage():
+    filename = fileDialog.askopenfilename(title='open', filetypes=[("Images", ".jpg .png")])
+    return filename
 
-    def place(self, container):
-        for child in container.winfo_children():
-            child.pack_forget()
-
-        imageLabel = tk.Label(container, image = self.image)
-        imageLabel.image = self.image
-        imageLabel.pack(side = tk.LEFT)
+def getImages():
+    filenames = fileDialog.askopenfilenames(title='open', filetypes=[("Images", ".jpg .png")])
+    return filenames
