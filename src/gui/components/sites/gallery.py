@@ -64,5 +64,5 @@ class Gallery(site.Site):
         self.image.grid(row = 1, column = 1)
 
     def onEvent(self, e):
-        if e.type == event.ImagesUpdateEvent:
+        if isinstance(e, event.ImagesUpdateEvent):
             self.reset()

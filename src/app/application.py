@@ -1,38 +1,24 @@
 
 class Application:
-    _images = []
-    @property
-    def images(self):
-        return self._images
-    @images.setter
-    def images(self, value):
-        self._images = value
+    __instance = None
 
-    _settingsStatus = None
-    @property
-    def settingsStatus(self):
-        return self._settingsStatus
-    @settingsStatus.setter
-    def settingsStatus(self, value):
-        self._settingsStatus = value
+    def __init__(self):
+        self.images = []
+        self.settingsStatus = None
+        self.runningStatus = None
 
-    _runningStatus = None
-    @property
-    def runningStatus(self):
-        return self._runningStatus
-    @runningStatus.setter
-    def runningStatus(self, value):
-        self._runningStatus = value
+        self.lambdaValue = None
 
 
-    _lambdaValue = None
-    @property
-    def lambdaValue(self):
-        return self._lambdaValue
-    @lambdaValue.setter
-    def lambdaValue(self, value):
-        self._lambdaValue = value
+        self.theta = 32
+        self.minAngle = 0
+        self.maxAngle = 180
 
 
+    def getInstance():
+        if Application.__instance is None:
+            Application.__instance = Application()
 
-    # def __init__(self):
+        return Application.__instance
+
+app = Application.getInstance()

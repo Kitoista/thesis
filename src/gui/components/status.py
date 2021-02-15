@@ -1,7 +1,7 @@
 import tkinter as tk
 from .. import assets, event, defaults
 from . import imageLabel
-from .sites import settings
+from .sites import settings, annealing
 
 class Status:
     def __init__(self, window):
@@ -34,9 +34,9 @@ class Status:
         self.container.pack(side = tk.TOP)
 
     def onEvent(self, e):
-        if e.type == event.ImagesUpdateEvent:
+        if isinstance(e, event.ImagesUpdateEvent):
             self.redrawImageStatus()
-        elif e.type == event.SettingsUpdatedEvent:
+        elif isinstance(e, event.SettingsUpdatedEvent):
             self.redrawSettingsStatus()
 
     def formatStatus(self, frame):
@@ -85,5 +85,5 @@ class Status:
         else:
             label.config(bg = defaults.red)
 
-        # label.bind('<Button-1>', lambda x: self.window.setActiveSite(running.Settings))
+        label.bind('<Button-1>', lambda x: self.window.setActiveSite(annealing.Annealing))
         label.pack()

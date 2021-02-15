@@ -2,7 +2,7 @@ import tkinter as tk
 import threading
 from . import defaults, assets, event
 from .components import menu, site, status
-from .components.sites import gallery
+from .components.sites import gallery, annealing
 
 class Window(threading.Thread):
     title = "Képrekonstrukció textúrainformációk figyelembe vételével"
@@ -30,7 +30,7 @@ class Window(threading.Thread):
     def generateSiteFrame(self):
         self.siteFrame = tk.Frame(self.gui)
         self.siteFrame.pack(side = tk.TOP, anchor = tk.NW)
-        self.activeSite = site.Site(self)
+        self.activeSite = annealing.Annealing(self)
         self.activeSite.activate()
 
     def setActiveSite(self, siteClass):
@@ -52,10 +52,10 @@ class Window(threading.Thread):
         images = assets.getImages()
         if len(images) > 0:
             self.app.images = images
-            self.triggerEvent(event.Event(event.ImagesUpdateEvent))
+            self.triggerEvent(event.ImagesUpdateEvent())
 
     def updateSettingsStatus(self):
-        self.triggerEvent(event.Event(event.SettingsUpdatedEvent))
+        self.triggerEvent(event.SettingsUpdatedEvent())
 
     def triggerEvent(self, e):
         self.status.onEvent(e)
