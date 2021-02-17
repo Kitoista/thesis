@@ -58,7 +58,7 @@ class Annealing(site.Site):
 
     def onEvent(self, e):
         if isinstance(e, ShowEvent):
-            self.update(e.recon, e.reconRadon, e.step, e.maxsteps, e.cost)
+            self.update(e.recon, e.reconRadon, e.step, e.cost)
         if isinstance(e, OriginalUpdateEvent):
             self.setOriginal(e.original, e.originalRadon)
 
@@ -68,7 +68,7 @@ class Annealing(site.Site):
         self.replaceImage(self.img_original, self.originalFrame, original)
         self.replaceImage(self.img_originalRadon, self.originalRadonFrame, originalRadon)
 
-    def update(self, recon, reconRadon, step, maxsteps, cost):
+    def update(self, recon, reconRadon, step, cost):
         self.replaceImage(self.img_recon, self.reconFrame, recon)
         self.replaceImage(self.img_reconRadon, self.reconRadonFrame, reconRadon)
         diff = self.original - recon
@@ -76,7 +76,7 @@ class Annealing(site.Site):
 
         error = rms.error(self.original, recon)
 
-        self.logText.set(f"#{step+1}/{maxsteps} cost: {cost:.3g} error: {error:.3g}")
+        self.logText.set(f"#{step+1} cost: {cost:.3g} error: {error:.3g}")
 
     def replaceImage(self, image, frame, icon):
         if icon is not None:

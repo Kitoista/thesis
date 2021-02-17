@@ -1,8 +1,10 @@
+import random
+
 from .cost import Cost
 
 class Homogenity(Cost):
 
-    def cost(self, state):
+    def __call__(self, state):
         sin_error = super().cost(state)
 
         count = 10
