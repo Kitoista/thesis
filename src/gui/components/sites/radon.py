@@ -26,4 +26,4 @@ class Radon(site.Site):
         self.arrow.bind('<Button-1>', lambda x : print('TRANSFORM'))
 
     def showImageOnLeft(self):
-        assets.loadImage().place(self.inputFrame)
+        assets.toPhotoImage().place(self.inputFrame)

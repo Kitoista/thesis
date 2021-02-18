@@ -3,7 +3,7 @@ import tkinter as tk
 import tkinter.filedialog as fileDialog
 from PIL import ImageTk, Image
 from . import defaults
-from app import imageLib
+from app.imageLib import imageLib
 
 arrow = '../assets/arrow-right.png'
 arrowLeft = '../assets/arrow-left.png'
@@ -11,7 +11,7 @@ arrowRight = '../assets/arrow-right.png'
 placeholder = '../assets/placeholder.png'
 content = '../assets/content.png'
 
-def loadImage(input=None, width=None, height=None):
+def toPhotoImage(input=None, width=None, height=None):
     width = width or defaults.imageSize["width"]
     height = height or defaults.imageSize["height"]
 
@@ -21,6 +21,8 @@ def loadImage(input=None, width=None, height=None):
         img = Image.open(input)
     elif type(input) is np.ndarray:
         img = imageLib.convertArrayToImage(input)
+    elif type(input) is ImageTk.PhotoImage:
+        return input
     else:
         img = input
 
@@ -28,6 +30,16 @@ def loadImage(input=None, width=None, height=None):
     img = ImageTk.PhotoImage(img)
 
     return img
+
+def loadImage(input=None):
+    if input is None:
+        return None
+    elif type(input) == str:
+        img = Image.open(input)
+    else:
+        img = input
+
+    return imageLib.normalize(img)
 
 def getFilename():
     filename = fileDialog.askopenfilename(title='open')

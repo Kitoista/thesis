@@ -9,6 +9,8 @@ class GridPosition(Position):
         self.sameCount = maxSameCount
         self.walkChance = walkChance
 
+        gridSize = int(gridSize)
+
         self.pos = None
 
         self.originalGrid = []

@@ -4,7 +4,7 @@ from .shape import Shape
 
 class Circle(Shape):
     def random():
-        return Circle(0.5, 1)
+        return Circle((0.5, 0.5), 0.5)
 
     def __init__(self, center, radius):
         self.center = center

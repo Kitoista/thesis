@@ -2,15 +2,17 @@ import random
 
 from .cost import Cost
 
-class Homogenity(Cost):
+class HomogenityCost(Cost):
+    def __init__(self, count, l):
+        super().__init__()
+        self.count = count
+        self.l = l
 
     def __call__(self, state):
         sin_error = super().cost(state)
 
-        count = 10
         ok = 0
-        not_ok = 50
-        for x in range(count):
+        for x in range(self.count):
             i = int(random.uniform(1, state.shape[0] - 1))
             j = int(random.uniform(1, state.shape[1] - 1))
             color = state[i][j]
@@ -27,6 +29,6 @@ class Homogenity(Cost):
                         gotya = 1
                         break
 
-        not_ok = count - ok
+        not_ok = self.count - ok
 
-        return sin_error + 0.01*(not_ok / count)
+        return sin_error + self.l*(not_ok / self.count)

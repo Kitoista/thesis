@@ -2,7 +2,8 @@ import tkinter as tk
 import threading
 from . import defaults, assets, event
 from .components import menu, site, status
-from .components.sites import gallery, annealing
+from .components.sites import gallery, settings
+from app import radon, imageLib
 
 class Window(threading.Thread):
     title = "Képrekonstrukció textúrainformációk figyelembe vételével"
@@ -10,7 +11,7 @@ class Window(threading.Thread):
 
     def init(self, app):
         self.app = app
-        self.menu = menu.Menu(self)
+        # self.menu = menu.Menu(self)
         self.status = status.Status(self)
 
     def run(self):
@@ -18,7 +19,7 @@ class Window(threading.Thread):
         self.gui.title(self.title)
         self.gui.geometry("{}x{}".format(defaults.size["width"], defaults.size["height"]))
 
-        self.menu.generate()
+        # self.menu.generate()
         self.generateTopFrame()
         self.generateSiteFrame()
         self.generateBottomFrame()
@@ -30,7 +31,7 @@ class Window(threading.Thread):
     def generateSiteFrame(self):
         self.siteFrame = tk.Frame(self.gui)
         self.siteFrame.pack(side = tk.TOP, anchor = tk.NW)
-        self.activeSite = annealing.Annealing(self)
+        self.activeSite = settings.Settings(self)
         self.activeSite.activate()
 
     def setActiveSite(self, siteClass):
@@ -48,14 +49,24 @@ class Window(threading.Thread):
         self.topFrame = tk.Frame(self.gui, width = defaults.size["width"])
         self.topFrame.pack(side = tk.TOP, anchor = tk.NW)
 
-    def openImages(self, *args):
-        images = assets.getImages()
-        if len(images) > 0:
-            self.app.images = images
-            self.triggerEvent(event.ImagesUpdateEvent())
+    def openImage(self, *args):
+        image = assets.getImage()
+        if image:
+            self.app.image = assets.loadImage(image)
+            # print(self.app.image)
+            self.triggerEvent(event.ImageUpdatedEvent())
+
+    def updateImageStatus(self):
+        self.triggerEvent(event.ImageUpdatedEvent())
 
     def updateSettingsStatus(self):
         self.triggerEvent(event.SettingsUpdatedEvent())
+
+    def updateRunningStatus(self):
+        self.triggerEvent(event.RunningUpdatedEvent())
+
+    def updateSaveStatus(self):
+        self.triggerEvent(event.SaveUpdatedEvent())
 
     def triggerEvent(self, e):
         self.status.onEvent(e)

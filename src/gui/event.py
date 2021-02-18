@@ -2,10 +2,16 @@
 class Event:
     pass
 
-class ImagesUpdateEvent(Event):
+class ImageUpdatedEvent(Event):
     pass
 
 class SettingsUpdatedEvent(Event):
+    pass
+
+class RunningUpdatedEvent(Event):
+    pass
+
+class SaveUpdatedEvent(Event):
     pass
 
 class OriginalUpdateEvent(Event):

@@ -3,7 +3,7 @@ import random
 
 class Neighbour:
 
-    def __init__(self, changesBounds = (1, 1)):
+    def __init__(self, changesBounds):
         self.changesBounds = changesBounds
         self.position = None
         self.color = None

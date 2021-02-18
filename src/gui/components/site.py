@@ -5,6 +5,8 @@ from . import imageLabel
 class Site:
     def __init__(self, window):
         self.window = window
+        self.app = window.app
+        self.ready = False
 
     def activate(self):
         if self.window.activeSite is not None:
@@ -17,6 +19,7 @@ class Site:
         self.content = tk.Frame(self.window.siteFrame)
         self.generateContent()
         self.content.pack()
+        self.ready = True
 
     def generateContent(self):
         image = imageLabel.ImageLabel(self.content, icon = assets.content)

@@ -2,9 +2,9 @@ from ... import radon
 from ...error import rms
 
 class Cost:
-    def __init__(self, sinogram, theta):
-        self.sinogram = sinogram
-        self.theta = theta
+    def __init__(self):
+        self.sinogram = None
+        self.theta = None
 
     def __call__(self, state):
         stateRadonTrans = radon.Radon(state, self.theta)

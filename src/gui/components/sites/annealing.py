@@ -1,15 +1,13 @@
 import tkinter as tk
 import numpy as np
+
 from ... import assets, defaults
 from .. import site, imageLabel
 from app.error import rms
-from ...event import ShowEvent, OriginalUpdateEvent
+from ...event import ShowEvent, ImageUpdatedEvent
 
 class Annealing(site.Site):
     def generateContent(self):
-        self.original=None
-        self.originalRadon=None
-
         self.workFrame = tk.Frame(self.content)
         self.workFrame.pack(side = tk.TOP, anchor = tk.NW)
 
@@ -54,32 +52,32 @@ class Annealing(site.Site):
         self.img_diff = imageLabel.ImageLabel(self.diffFrame, icon = assets.placeholder)
         self.img_diff.pack()
 
-        self.setOriginal(self.original, self.originalRadon)
+        self.setOriginal(self.app.image, self.app.sinogram)
+        if self.app.lastShowEvent is not None:
+            self.onEvent(self.app.lastShowEvent)
 
     def onEvent(self, e):
         if isinstance(e, ShowEvent):
             self.update(e.recon, e.reconRadon, e.step, e.cost)
-        if isinstance(e, OriginalUpdateEvent):
-            self.setOriginal(e.original, e.originalRadon)
+        if isinstance(e, ImageUpdatedEvent):
+            self.setOriginal(self.app.image, self.app.sinogram)
 
     def setOriginal(self, original, originalRadon):
-        self.original = original
-        self.originalRadon = originalRadon
         self.replaceImage(self.img_original, self.originalFrame, original)
         self.replaceImage(self.img_originalRadon, self.originalRadonFrame, originalRadon)
 
     def update(self, recon, reconRadon, step, cost):
         self.replaceImage(self.img_recon, self.reconFrame, recon)
         self.replaceImage(self.img_reconRadon, self.reconRadonFrame, reconRadon)
-        diff = self.original - recon
+        diff = self.app.image - recon
         self.replaceImage(self.img_diff, self.diffFrame, diff)
 
-        error = rms.error(self.original, recon)
+        error = rms.error(self.app.image, recon)
 
         self.logText.set(f"#{step+1} cost: {cost:.3g} error: {error:.3g}")
 
     def replaceImage(self, image, frame, icon):
         if icon is not None:
-            newImage = assets.loadImage(icon)
+            newImage = assets.toPhotoImage(icon)
             image.configure(image=newImage)
             image.image = newImage

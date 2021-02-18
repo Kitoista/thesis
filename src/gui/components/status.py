@@ -12,12 +12,6 @@ class Status:
 
         self.column = 0
 
-        self.imageStatusFrame = tk.Frame(self.container)
-        self.formatStatus(self.imageStatusFrame)
-        self.redrawImageStatus()
-        self.imageStatusFrame.grid(row = 0, column = self.column)
-        self.column = self.column + 1
-
         self.settingsStatusFrame = tk.Frame(self.container)
         self.formatStatus(self.settingsStatusFrame)
         self.redrawSettingsStatus()
@@ -31,28 +25,33 @@ class Status:
         self.runningStatusFrame.grid(row = 0, column = self.column)
         self.column = self.column + 1
 
+
+        self.killFrame = tk.Frame(self.container)
+        self.formatStatus(self.killFrame)
+        self.drawKill()
+        self.killFrame.grid(row = 0, column = self.column)
+        self.column = self.column + 1
+
+
+        self.saveStatusFrame = tk.Frame(self.container)
+        self.formatStatus(self.saveStatusFrame)
+        self.redrawSaveStatus()
+        self.saveStatusFrame.grid(row = 0, column = self.column)
+        self.column = self.column + 1
+
         self.container.pack(side = tk.TOP)
 
     def onEvent(self, e):
-        if isinstance(e, event.ImagesUpdateEvent):
-            self.redrawImageStatus()
-        elif isinstance(e, event.SettingsUpdatedEvent):
+        if isinstance(e, event.SettingsUpdatedEvent):
             self.redrawSettingsStatus()
+        elif isinstance(e, event.RunningUpdatedEvent):
+            self.redrawRunningStatus()
+        elif isinstance(e, event.SaveUpdatedEvent):
+            self.redrawSaveStatus()
 
     def formatStatus(self, frame):
         frame.config(highlightbackground = defaults.lightgray)
         frame.config(highlightthickness = 1)
-
-    def redrawImageStatus(self):
-        for child in self.imageStatusFrame.winfo_children():
-            child.destroy()
-        label = tk.Label(self.imageStatusFrame, text = "  " + str(len(self.window.app.images)) + " image(s) loaded  ")
-        if len(self.window.app.images) > 0:
-            label.config(bg = defaults.lightgreen)
-        else:
-            label.config(bg = defaults.red)
-        label.bind('<Button-1>', self.window.openImages)
-        label.pack()
 
     def redrawSettingsStatus(self):
         for child in self.settingsStatusFrame.winfo_children():
@@ -86,4 +85,28 @@ class Status:
             label.config(bg = defaults.red)
 
         label.bind('<Button-1>', lambda x: self.window.setActiveSite(annealing.Annealing))
+        label.pack()
+
+    def drawKill(self):
+        killText = "Kill"
+
+        label = tk.Label(self.killFrame, text = "  " + killText + "  ")
+        label.config(bg = defaults.red)
+
+        label.bind('<Button-1>', lambda x: self.window.app.killAnnealing())
+        label.pack()
+
+    def redrawSaveStatus(self):
+        for child in self.saveStatusFrame.winfo_children():
+            child.destroy()
+
+        saveText = "Save"
+
+        label = tk.Label(self.saveStatusFrame, text = "  " + saveText + "  ")
+        if self.window.app.saveStatus:
+            label.config(bg = defaults.lightgreen)
+            label.bind('<Button-1>', lambda x: self.window.app.save())
+        else:
+            label.config(bg = defaults.red)
+
         label.pack()

@@ -1,7 +1,7 @@
 
 size = {
     "width": 300*5+100+6,
-    "height": 480,
+    "height": 600,
 }
 imageSize = {
     "width": 300,

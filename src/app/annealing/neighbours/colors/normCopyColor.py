@@ -4,9 +4,9 @@ import numpy as np
 from .color import Color
 
 class NormCopyColor(Color):
-    def __init__(self, copyChance = 0.5, maxDiff = 0.1):
+    def __init__(self, copyChance, maxDiff):
         self.copyChance = copyChance
-        self.maxDiff = 0.1
+        self.maxDiff = maxDiff
 
     def __call__(self, state, pos):
         if random.uniform(0, 1) > self.copyChance:
