@@ -52,6 +52,8 @@ class Annealing(site.Site):
         self.img_diff = imageLabel.ImageLabel(self.diffFrame, icon = assets.placeholder)
         self.img_diff.pack()
 
+        # self.ready = True
+
         self.setOriginal(self.app.image, self.app.sinogram)
         if self.app.lastShowEvent is not None:
             self.onEvent(self.app.lastShowEvent)
@@ -67,6 +69,8 @@ class Annealing(site.Site):
         self.replaceImage(self.img_originalRadon, self.originalRadonFrame, originalRadon)
 
     def update(self, recon, reconRadon, step, cost):
+        # if not self.ready:
+        #     return
         self.replaceImage(self.img_recon, self.reconFrame, recon)
         self.replaceImage(self.img_reconRadon, self.reconRadonFrame, reconRadon)
         diff = self.app.image - recon

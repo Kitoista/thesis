@@ -5,11 +5,11 @@ from PIL import ImageTk, Image
 from . import defaults
 from app.imageLib import imageLib
 
-arrow = '../assets/arrow-right.png'
-arrowLeft = '../assets/arrow-left.png'
-arrowRight = '../assets/arrow-right.png'
-placeholder = '../assets/placeholder.png'
-content = '../assets/content.png'
+arrow = 'assets/arrow-right.png'
+arrowLeft = 'assets/arrow-left.png'
+arrowRight = 'assets/arrow-right.png'
+placeholder = 'assets/placeholder.png'
+content = 'assets/content.png'
 
 def toPhotoImage(input=None, width=None, height=None):
     width = width or defaults.imageSize["width"]
