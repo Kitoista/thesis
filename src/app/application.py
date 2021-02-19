@@ -123,7 +123,7 @@ class Application:
 
         self.imageSize = 160
         self.theta = 32
-        self.radonAngleBounds = (0, 180)
+        self.radonAngleBounds = (0., 180.)
 
         self.annealing = None
 
@@ -147,7 +147,7 @@ class Application:
         if self.image is None or self.theta is None:
             self.sinogram = None
         else:
-            radonTrans = radon.Radon(self.image, self.theta)
+            radonTrans = radon.Radon(self.image, self.theta, self.radonAngleBounds)
             self.sinogram = radonTrans.transform()
 
     def getInstance():
@@ -163,7 +163,7 @@ class Application:
             self.debugHist += entry + "\n"
 
         if self.window and step != 0 and (step % self.showBundles == 0 or isLast):
-            stateRadonTrans = radon.Radon(state, self.theta)
+            stateRadonTrans = radon.Radon(state, self.theta, self.radonAngleBounds)
             stateSinogram = stateRadonTrans.transform()
             error = rms.error(self.image, state)
 
@@ -264,6 +264,7 @@ class Application:
         self.runningStatus = True
         self.annealing.cost.sinogram = self.sinogram
         self.annealing.cost.theta = self.theta
+        self.annealing.cost.angleBounds = self.radonAngleBounds
 
         self.annealingThread = threading.Thread(target=lambda x: self.annealing(), args=(1,))
         self.annealingThread.start()

@@ -30,8 +30,8 @@ class Settings(site.Site):
 
         self.title("Radon")
         self.input("theta", "Theta", self.app.theta, type=int)
-        self.input("radonAngleBoundsMin", "Angle start", self.app.radonAngleBounds[0], type=int)
-        self.input("radonAngleBoundsMax", "Angle end", self.app.radonAngleBounds[1], type=int)
+        self.input("radonAngleBoundsMin", "Angle start", self.app.radonAngleBounds[0])
+        self.input("radonAngleBoundsMax", "Angle end", self.app.radonAngleBounds[1])
         self.line()
 
         self.title("Temperature")
