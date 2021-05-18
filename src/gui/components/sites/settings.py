@@ -1,30 +1,35 @@
 import tkinter as tk
 from tkinter import ttk
 import re
+import numpy as np
 
 from ... import assets, defaults
-from .. import site, imageLabel
+from .. import formSite, imageLabel
 from . import annealing
 
-class Settings(site.Site):
+class Settings(formSite.FormSite):
 
     def generateContent(self):
-        self.workFrame = tk.Frame(self.content)
-        self.workFrame.pack(side = tk.TOP, anchor = tk.NW)
+        self.initForm(self.content)
 
-        self.containers = []
-        self.container = None
-        self.row = 0
+    def generateForm(self):
+        self.values = {}
+        if self.app.settings is not None:
+            self.values = self.app.settings
 
-        self.settings = []
-        self.subSettings = {}
-
-
-        self.newColumn()
+        self.title("Settings")
+        self.input("showBundles", "Show bundles", self.app.showBundles, type=int)
+        self.input("threadPoolSize", "Threads", 8, type=int)
+        self.input("threadLength", "Thread length", 100, type=int)
 
         self.title("Image")
-        self.imageLoader("imagePath", "Path")
+        self.imageLoader("imagePath", "Path", "original.png")
         self.input("imageSize", "Size", self.app.imageSize, type=int)
+        self.select("grayScaleType", "Gray scale", ["List", "Equal"], subSettings=True)
+        self.grayScaleTypeSettings = [
+        self.input("grayScale", "Scale values e.g. 0 0.3 1", self.arrayString(self.app.grayScale), type=self.floatArrayType),
+            self.input("grayScaleLength", "Scale length", self.app.grayScaleLength, type=int),
+        ]
 
         self.line()
 
@@ -48,6 +53,9 @@ class Settings(site.Site):
         ]
         self.line()
 
+
+        self.newColumn()
+
         self.title("Stop criteria")
         self.select("iterator", "Method", ["Constant", "Temperature", "Step", "Cost"], subSettings=True)
 
@@ -63,20 +71,39 @@ class Settings(site.Site):
         self.line()
 
 
-        self.newColumn()
-
-
         self.title("Cost")
-        self.select("cost", "Method", ["Sinogram RMS", "Homogenity"], subSettings=True)
-        self.costSettings = [
+        self.input("costGoodValue", "Good value", self.goodValueString(), type=self.goodValueType),
+        self.input("costLambda", "Lambda", self.arrayString([0, 10]), type=self.floatArrayType),
+        self.input("costKappa", "Kappa", 1),
+
+
+        self.title("Descriptor")
+        self.select("descriptor", "Method", ["None", "Homogenity", "Lbp", "Coocc", "Gabor", "Hog"], subSettings=True)
+
+        self.descriptorSettings = [
+            [ ],
             [ ],
             [
-                self.input("homogenityCostCount", "Same count", 100, type=int),
-                self.input("homogenityCostLambda", "Lambda", 0.01)
+                self.input("lbpDescriptorNumPoints", "Number of points", 4, type=int),
+                self.input("lbpDescriptorRadius", "Radius", 1, type=int),
+            ],
+            [
+                self.input("cooccDescriptorDistances", "Distances", self.arrayString([1, 2, 3, 4, 5]), type=self.floatArrayType),
+                self.input("cooccDescriptorAngles", "Angles", self.arrayString([0, np.pi/4, np.pi/2, 3*np.pi/4]), type=self.floatArrayType),
+            ],
+            [
+                self.input("gaborDescriptorThetas", "Theta", 2, type=int),
+                self.input("gaborDescriptorSigmas", "Sigmas", self.arrayString([1, 2]), type=self.floatArrayType),
+                self.input("gaborDescriptorFrequencies", "Frequencies", self.arrayString([0.05, 0.25]), type=self.floatArrayType),
+            ],
+            [
+                self.input("hogDescriptorOrientations", "Orientations", 9, type=int),
+                self.input("hogDescriptorPixelsPerCell", "Pixels per cell", self.arrayString([8, 8]), type=self.intArrayType),
+                self.input("hogDescriptorCellsPerBlock", "Cells per block", self.arrayString([2, 2]), type=self.intArrayType),
             ],
         ]
-        self.line()
 
+        self.line()
 
         self.title("Neighbour")
         self.input("neighbourChangesBoundsMin", "Minimum change", 1, type=int)
@@ -95,6 +122,9 @@ class Settings(site.Site):
         ]
         self.line()
 
+
+        self.newColumn()
+
         self.title("Color")
         self.select("color", "Method", ["Random", "Copy", "Norm Copy"], subSettings=True)
         self.colorSettings = [
@@ -111,9 +141,6 @@ class Settings(site.Site):
         self.line()
 
 
-        self.newColumn()
-
-
         self.title("Filler")
         self.select("filler", "Method", ["Quick", "Shape"], subSettings=True, command=self.onFillerChange)
 
@@ -127,7 +154,7 @@ class Settings(site.Site):
             [ ],
             [
                 self.input("shapeFillerRectangleMin", "Min size", 1, type=int),
-                self.input("shapeFillerRectangleMax", "Max size", 16, type=int),
+                self.input("shapeFillerRectangleMax", "Max size", 15, type=int),
             ],
         ]
 
@@ -153,8 +180,8 @@ class Settings(site.Site):
         self.shapeFillerTriangleSettings = [
             [ ],
             [
-                self.input("shapeFillerTriangleMin", "Min size", 5, type=int),
-                self.input("shapeFillerTriangleMax", "Max size", 12, type=int),
+                self.input("shapeFillerTriangleMin", "Min size", 3, type=int),
+                self.input("shapeFillerTriangleMax", "Max size", 15, type=int),
             ],
         ]
 
@@ -169,18 +196,25 @@ class Settings(site.Site):
         ]
 
         self.line()
+        self.submitButton()
 
+    def goodValueType(self, value):
+        t = self.descriptor.get()
+        # print(t)
+        return self.floatArrayType(value)
+        # if t == "Lbp" or t == "Coocc" or t == "Gabor":
+        # return float(value)
 
-        self.initSubSettings()
-        self.submit = self.submitButton()
-
-    def newColumn(self):
-        if len(self.containers) > 0:
-            self.verticalLine()
-        self.container = tk.Frame(self.workFrame)
-        self.container.grid(row = 0, column = len(self.containers), sticky="nsew")
-        self.container.grid_columnconfigure(0, minsize=220)
-        self.containers.append(self.container)
+    def goodValueString(self):
+        re = 0
+        if self.settings is not None and 'descriptor' in self.settings:
+            re = self.goodCostValue.get()
+            t = self.descriptor.get()
+            if t == "Lbp" or t == "Coocc" or t == "Gabor":
+                return re.join(map(str, self.app.grayScale))
+            else:
+                return re
+        return re
 
     def onFillerChange(self, val):
         self.hide(self.fillerSettings)
@@ -194,165 +228,17 @@ class Settings(site.Site):
             self.hide(self.shapeFillerRoundedRectangleSettings)
             self.hide(self.shapeFillerTriangleSettings)
 
-    def addSubSettings(self, attr, options, command=None):
-        def func(val):
-            settings = getattr(self, attr + "Settings")
-            index = options.index(val)
-            self.hide(settings)
-            self.show(settings[index])
-            if command is not None:
-                command(val)
-        self.subSettings[attr] = {
-            'options': options,
-            'command': func
-        }
-        return func
-
-    def initSubSettings(self, startswith=""):
-        for attr in self.subSettings:
-            if attr.startswith(startswith):
-                self.subSettings[attr]['command'](getattr(self, attr).get())
-
-    def hide(self, attr):
-        if isinstance(attr, list):
-            for x in attr:
-                self.hide(x)
-        else:
-            getattr(self, '_' + attr).grid_remove()
-            getattr(self, '_l_' + attr).grid_remove()
-
-    def show(self, attr):
-        if isinstance(attr, list):
-            for x in attr:
-                self.show(x)
-        else:
-            getattr(self, '_' + attr).grid()
-            getattr(self, '_l_' + attr).grid()
-
-    def title(self, name):
-        self.labelFor(name, ending="", columnspan=2, pady=(5, 10))
-        self.row += 1
-
-    def line(self, pady=10):
-        separator = ttk.Separator(self.container, orient='horizontal')
-        separator.grid(row = self.row, column = 0, columnspan = 2, pady=(pady, pady), sticky="ew")
-        self.row += 1
-
-    def verticalLine(self, padx=10):
-        separator = ttk.Separator(self.container, orient='vertical')
-        separator.grid(row = 0, rowspan = self.row + 1, column = 2, padx=(padx, padx), sticky="ns")
-        self.row = 0
-
-    def select(self, attr, name, options, command = None, subSettings = False, type=str):
-        label = self.labelFor(name)
-
-        value = options[0]
-        if self.app.settings is not None:
-            value = self.app.settings[attr]
-
-        var = tk.StringVar(self.container)
-        var.set(value)
-
-        if subSettings:
-            command = self.addSubSettings(attr, options, command=command)
-        select = tk.OptionMenu(self.container, var, *options, command = command)
-        select.config(width = 20)
-        select.grid(row = self.row, column = 1)
-
-        self.row += 1
-        setattr(self, attr, var)
-        setattr(self, '_' + attr, select)
-        setattr(self, '_l_' + attr, label)
-        setattr(self, '_t_' + attr, type)
-        self.settings.append(attr)
-        return attr
-
-    def input(self, attr, name, value, type=float):
-        label = self.labelFor(name)
-
-        if self.app.settings is not None:
-            value = self.app.settings[attr]
-
-        input = tk.Entry(self.container)
-        input.config(width = 24)
-        if value is not None:
-            input.insert(0, value)
-        input.grid(row = self.row, column = 1)
-
-        self.row += 1
-        setattr(self, attr, input)
-        setattr(self, '_' + attr, input)
-        setattr(self, '_l_' + attr, label)
-        setattr(self, '_t_' + attr, type)
-        self.settings.append(attr)
-        return attr
-
-    def imageLoader(self, attr, name, value='', type=str):
-        label = self.labelFor(name)
-
-        if self.app.settings is not None:
-            value = self.app.settings[attr]
-
-        var = tk.StringVar(self.container)
-        var.set(value)
-
-        visible = tk.StringVar(self.container)
-        visibleValue = ''
-        if value == '':
-            visibleValue = '-- click here to load image --'
-        else:
-            parts = value.split(self.window.app.separator)
-            visibleValue = parts[len(parts) - 1]
-
-        visible.set(visibleValue)
-
-        imageLoader = tk.Label(self.container, textvariable = visible)
-        imageLoader.bind("<Button-1>", lambda e: self.imageLoaderCommand(var, visible))
-        imageLoader.grid(row = self.row, column = 1)
-
-        self.row += 1
-        setattr(self, attr, var)
-        setattr(self, '_' + attr, imageLoader)
-        setattr(self, '_l_' + attr, label)
-        setattr(self, '_t_' + attr, type)
-        self.settings.append(attr)
-        return attr
-
-    def imageLoaderCommand(self, target, visible):
-        path = assets.getImage()
-        if len(path) == 0:
-            return
-        target.set(path)
-        parts = re.split('/', path)
-        visible.set(parts[len(parts) - 1])
-        return path
-
-    def changeInputValue(self, attr, value):
-        getattr(self, attr).delete(0, tk.END)
-        getattr(self, attr).insert(0, value)
-
-    def labelFor(self, name, ending = ": ", columnspan = None, pady = (0, 0)):
-        label = tk.Label(self.container, text = name + ending)
-        label.grid(row = self.row, column = 0, columnspan = columnspan, pady = pady)
-        return label
-
-    def submitButton(self):
-        btn = tk.Button(self.container, text = 'Submit', command = self.setValues)
-        btn.grid(row = self.row, column = 1)
-        return btn
-
-    def setValues(self):
+    def getValues(self):
         imageSize = int(self.imageSize.get())
         values = {
             'colorStartShape': (imageSize, imageSize),
             'randomStartShape': (imageSize, imageSize),
             'imageStartShape': (imageSize, imageSize),
         }
-        for attr in self.settings:
-            container = getattr(self, attr)
-            convertTo = getattr(self, '_t_' + attr)
-            value = container.get()
-            values[attr] = convertTo(value)
+        return super().getValues(values)
+
+    def onSubmit(self):
+        values = self.getValues()
 
         if self.window.app.applySettings(values):
             self.window.app.settingsStatus = "Set"

@@ -2,6 +2,9 @@ import numpy as np
 import tkinter as tk
 import tkinter.filedialog as fileDialog
 from PIL import ImageTk, Image
+from pathlib import Path
+from gui.components.imageLabel import ImageLabel
+
 from . import defaults
 from app.imageLib import imageLib
 
@@ -41,18 +44,22 @@ def loadImage(input=None):
 
     return imageLib.normalize(img)
 
-def getFilename():
+def getFilename(filetypes=None):
     filename = fileDialog.askopenfilename(title='open')
     return filename
 
-def getFilenames():
+def getFilenames(filetypes=None):
     filenames = fileDialog.askopenfilenames(title='open')
     return filenames
 
 def getImage():
-    filename = fileDialog.askopenfilename(title='open', filetypes=[("Images", ".jpg .png")])
-    return filename
+    return getFilename(filetypes=[("Images", ".jpg .png")])
 
 def getImages():
-    filenames = fileDialog.askopenfilenames(title='open', filetypes=[("Images", ".jpg .png")])
-    return filenames
+    return getFilenames(filetypes=[("Images", ".jpg .png")])
+
+def getJson():
+    return fileToString(getFilename(filetypes=[("Json", ".json")]))
+
+def fileToString(filename):
+    return Path(filename).read_text()

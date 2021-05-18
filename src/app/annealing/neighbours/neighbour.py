@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from app.imageLib import imageLib
 
 class Neighbour:
 
@@ -9,7 +10,7 @@ class Neighbour:
         self.color = None
         self.filler = None
 
-    def __call__(self, state, step):
+    def __call__(self, state, step, T):
         changes = int(random.uniform(self.changesBounds[0], self.changesBounds[1]))
 
         newState = np.copy(state)
@@ -19,9 +20,9 @@ class Neighbour:
         for i in range(changes):
             pos = self.position(newState.shape)
 
-            newColor = self.color(state, pos)
+            newColor = imageLib.closestColor(self.color(state, pos))
 
-            newState, currentDebugMessage = self.filler(newState, pos, newColor)
+            newState, currentDebugMessage = self.filler(newState, pos, newColor, T)
 
             if i != 0:
                 currentDebugMessage = f" {currentDebugMessage}"

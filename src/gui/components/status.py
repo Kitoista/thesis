@@ -12,6 +12,13 @@ class Status:
 
         self.column = 0
 
+        self.loadFrame = tk.Frame(self.container)
+        self.formatStatus(self.loadFrame)
+        self.drawLoad()
+        self.loadFrame.grid(row = 0, column = self.column)
+        self.column = self.column + 1
+
+
         self.settingsStatusFrame = tk.Frame(self.container)
         self.formatStatus(self.settingsStatusFrame)
         self.redrawSettingsStatus()
@@ -37,6 +44,13 @@ class Status:
         self.formatStatus(self.saveStatusFrame)
         self.redrawSaveStatus()
         self.saveStatusFrame.grid(row = 0, column = self.column)
+        self.column = self.column + 1
+
+
+        self.testFrame = tk.Frame(self.container)
+        self.formatStatus(self.testFrame)
+        self.drawTest()
+        self.testFrame.grid(row = 0, column = self.column)
         self.column = self.column + 1
 
         self.container.pack(side = tk.TOP)
@@ -91,7 +105,7 @@ class Status:
         killText = "Kill"
 
         label = tk.Label(self.killFrame, text = "  " + killText + "  ")
-        label.config(bg = defaults.red)
+        label.config(bg = defaults.lightblue)
 
         label.bind('<Button-1>', lambda x: self.window.app.killAnnealing())
         label.pack()
@@ -109,4 +123,22 @@ class Status:
         else:
             label.config(bg = defaults.red)
 
+        label.pack()
+
+    def drawLoad(self):
+        loadText = "Load"
+
+        label = tk.Label(self.loadFrame, text = "  " + loadText + "  ")
+        label.config(bg = defaults.lightblue)
+
+        label.bind('<Button-1>', lambda x: self.window.app.load())
+        label.pack()
+
+    def drawTest(self):
+        testText = "Test"
+
+        label = tk.Label(self.testFrame, text = "  " + testText + "  ")
+        label.config(bg = defaults.lightblue)
+
+        label.bind('<Button-1>', lambda x: self.window.app.test())
         label.pack()

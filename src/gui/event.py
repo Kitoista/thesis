@@ -20,9 +20,10 @@ class OriginalUpdateEvent(Event):
         self.originalRadon = originalRadon
 
 class ShowEvent(Event):
-    def __init__(self, recon=None, reconRadon=None, step=None, error=None, cost=None):
+    def __init__(self, recon=None, reconRadon=None, step=None, error=None, cost=None, startedAt=None):
         self.recon = recon
         self.reconRadon = reconRadon
         self.step = step
         self.error = error
         self.cost = cost
+        self.startedAt = startedAt

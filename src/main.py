@@ -1,76 +1,58 @@
-from gui.window import Window
-from app.application import app
-
-from skimage.data import shepp_logan_phantom
-from PIL import Image
-
-import skimage
-import numpy as np
-import matplotlib.pyplot as plt
-
 import random
 import math
+import time
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+import skimage
+from skimage.data import shepp_logan_phantom
+import warnings
 
 from app import radon
+from app.application import app
+from app.error import error
+from app.imageLib import imageLib
 from app.reconstructors import iradon
 from app.reconstructors import iradonSart
-from app.error import rms
+from app.annealing.costs.descriptors.lbpDescriptor import LbpDescriptor
 
-from gui import event
-from app.imageLib import imageLib
+from gui import event, assets
+from gui.window import Window
+
+# warnings.filterwarnings("")
 
 app.window = Window()
 app.window.init(app)
 app.window.start()
 
+# time.sleep(1)
+
+# lbp = LbpDescriptor(4, 1)
+# img = assets.loadImage(assets.getImage())
+# app.window.show(img)
+# app.window.show(lbp.show(img))
+# print(lbp.show(img))
+# print(lbp(img))
+
+# app.grayScale = [0, 1]
 # app.image = imageLib.normalize(shepp_logan_phantom())
-# image = imageLib.normalize(Image.open('sphere.png'))
+# image = imageLib.normalize(Image.open('brick.jpg'))
 #
 # method = "iradons"
-
-
-# if method == 'annealing':
-#     window.triggerEvent(event.OriginalUpdateEvent(app.image, sinogram))
 #
-#     annealing = Annealing()
-#     annealing.accept = Accept()
-#     annealing.start = ColorStart(shape=app.image.shape, color=0)
-#     annealing.cost = Cost(sinogram=sinogram, theta = app.theta)
-#     annealing.temperature = Temperature(start=0.145, alpha=0.000002)
-#     annealing.neighbour = Neighbour(changesBounds=(1, 1))
 #
-#     # annealing.iterator = Iterator(maxsteps=50000)
-#     # annealing.iterator = CostIterator(value=0.8)
-#     annealing.iterator = ConstantIterator(diff=0.001, overSteps=5000)
+# # using iradon and iradon sart
 #
-#     # annealing.neighbour.position = GridPosition(gridSize=20, maxSameCount=100, walkChance=5)
-#     # annealing.neighbour.position = Position()
-#     annealing.neighbour.position = SnakePosition(walkChance=5)
-#     # annealing.neighbour.color = CopyColor(copyChance=0.5, maxDiff=0.1)
-#     annealing.neighbour.color = NormCopyColor(copyChance=0.5, maxDiff=0.03)
-#
-#     shapeClassesWithBounds = [
-#         (Triangle, (5, 12)),
-#         (RoundedRectangle, (2, 7)),
-#         (Rectangle, (1, 16))
-#     ]
-#
-#     annealing.neighbour.filler = ShapeFiller(shapeClassesWithBounds)
-#
-#     state = annealing()
-
-# using iradon and iradon sart
-
 # def iradons():
 #     # skimage.io.imsave(f"original.png", np.around(image*255).astype(np.uint8))
-#     theta = 2
-#     radonTrans = radon.Radon(image, theta)
+#     theta = 180
+#     radonTrans = radon.Radon(image, theta, (0., 180.))
 #     sinogram = radonTrans.transform()
 #     mode = None
 #     iterations = 2
 #     def logger(recon, i):
 #         # skimage.io.imsave(f"mode{mode}_iteration{i}.png", np.around((recon-image)*255).astype(np.uint8))
-#         error = rms.error(image, recon)
+#         error = error.rms(image, recon)
 #         print(f"Error ({i} iterations): {error:.3g}")
 #
 #         # if i == iterations - 1:

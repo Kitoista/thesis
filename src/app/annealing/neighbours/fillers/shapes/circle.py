@@ -11,4 +11,4 @@ class Circle(Shape):
         self.radius = radius
 
     def contains(self, pos):
-        return np.linalg.norm((self.center[0] - pos[0], self.center[1] - pos[1])) <= self.radius
+        return np.linalg.norm((self.center[0] - pos[0], self.center[1] - pos[1])) < self.radius

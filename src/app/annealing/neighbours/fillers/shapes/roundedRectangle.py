@@ -11,8 +11,8 @@ class RoundedRectangle(Shape):
     def __init__(self, corner):
         self.elements = []
         corner = float(corner) / 2
-        self.elements.append(Rectangle((0, corner), (1, 1-2*corner)))
-        self.elements.append(Rectangle((corner, 0), (1-2*corner, 1)))
+        self.elements.append(Rectangle((0.5, 0.5), (1, 1-2*corner)))
+        self.elements.append(Rectangle((0.5, 0.5), (1-2*corner, 1)))
         self.elements.append(Circle((corner, corner), corner))
         self.elements.append(Circle((corner, 1 - corner), corner))
         self.elements.append(Circle((1 - corner, corner), corner))

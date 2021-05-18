@@ -3,14 +3,46 @@ from PIL import Image, ImageFile
 import numpy as np
 
 class ImageLib:
-    def __init__(self):
+    @property
+    def grayScale(self):
+        return self._grayScale
+    @grayScale.setter
+    def grayScale(self, value):
+        self._grayScale = value
+
+    @property
+    def grayScaleLength(self):
+        return len(self._grayScale)
+    @grayScaleLength.setter
+    def grayScaleLength(self, value):
+        self._grayScale = np.linspace(0, 1, value)
+
+    def __init__(self, grayScale = None, grayScaleLength = None):
         self.imageSize = 160
+        self._grayScale = None
+
+        if grayScale is not None:
+            self.grayScale = grayScale
+        elif grayScaleLength is not None:
+            self.grayScaleLength = grayScaleLength
+        else:
+            self.grayScaleLength = 256
+
+    def closestColor(self, color):
+        best = 3
+        for g in self.grayScale:
+            if abs(color - best) > abs(color - g):
+                best = g
+        return best
 
     def normalize(self, image):
         image = np.asarray(image)
         image = rescale(image, scale=1, mode='reflect', multichannel=False)
         image = resize(image, (self.imageSize, self.imageSize, 1))
         image = np.squeeze(image)
+        for i in range(len(image)):
+            for j in range(len(image[i])):
+                image[i][j] = self.closestColor(image[i][j])
         return image
 
     def convertArrayToImage(self, array, min=0, max=1):

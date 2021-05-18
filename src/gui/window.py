@@ -2,7 +2,7 @@ import tkinter as tk
 import threading
 from . import defaults, assets, event
 from .components import menu, site, status
-from .components.sites import gallery, settings
+from .components.sites import gallery, settings, descriptors
 from app import radon, imageLib
 
 class Window(threading.Thread):
@@ -31,11 +31,11 @@ class Window(threading.Thread):
     def generateSiteFrame(self):
         self.siteFrame = tk.Frame(self.gui)
         self.siteFrame.pack(side = tk.TOP, anchor = tk.NW)
-        self.activeSite = settings.Settings(self)
+        self.activeSite = descriptors.Descriptors(self)
         self.activeSite.activate()
 
-    def setActiveSite(self, siteClass):
-        if not isinstance(self.activeSite, siteClass):
+    def setActiveSite(self, siteClass, forceReload=False):
+        if not isinstance(self.activeSite, siteClass) or forceReload:
             self.activeSite = siteClass(self)
             self.activeSite.activate()
 
@@ -72,3 +72,7 @@ class Window(threading.Thread):
         self.status.onEvent(e)
         if self.activeSite is not None:
             self.activeSite.onEvent(e)
+
+    def show(self, img):
+        self.app.images.append(img)
+        self.setActiveSite(gallery.Gallery)

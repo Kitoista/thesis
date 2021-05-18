@@ -1,8 +1,9 @@
 from datetime import datetime
 import json
 import platform
+import numpy as np
 
-from .error import rms
+from .error import error
 from . import radon
 from gui import event
 from app import radon
@@ -10,6 +11,9 @@ import threading
 
 from .imageLib import imageLib
 from gui import assets
+
+from gui.components.sites.settings import Settings as SettingsSite
+from gui.components.sites.descriptors import Descriptors as DescriptorsSite
 
 from app.annealing.annealing import Annealing
 from app.annealing.accepts.accept import Accept
@@ -25,8 +29,14 @@ from app.annealing.iterators.temperatureIterator import TemperatureIterator
 from app.annealing.iterators.stepIterator import StepIterator
 from app.annealing.iterators.costIterator import CostIterator
 
-from app.annealing.costs.sinogramRMSCost import SinogramRMSCost
-from app.annealing.costs.homogenityCost import HomogenityCost
+from app.annealing.costs.cost import Cost
+
+from app.annealing.costs.descriptors.noneDescriptor import NoneDescriptor
+from app.annealing.costs.descriptors.homogenityDescriptor import HomogenityDescriptor
+from app.annealing.costs.descriptors.lbpDescriptor import LbpDescriptor
+from app.annealing.costs.descriptors.cooccDescriptor import CooccDescriptor
+from app.annealing.costs.descriptors.gaborDescriptor import GaborDescriptor
+from app.annealing.costs.descriptors.hogDescriptor import HogDescriptor
 
 from app.annealing.neighbours.neighbour import Neighbour
 
@@ -60,8 +70,13 @@ class Application:
         'temperatureIterator': TemperatureIterator,
         'stepIterator': StepIterator,
         'costIterator': CostIterator,
-        'sinogramRMSCost': SinogramRMSCost,
-        'homogenityCost': HomogenityCost,
+        'cost': Cost,
+        'homogenityDescriptor': HomogenityDescriptor,
+        'noneDescriptor': NoneDescriptor,
+        'lbpDescriptor': LbpDescriptor,
+        'cooccDescriptor': CooccDescriptor,
+        'gaborDescriptor': GaborDescriptor,
+        'hogDescriptor': HogDescriptor,
         'neighbour': Neighbour,
         'randomPosition': RandomPosition,
         'gridPosition': GridPosition,
@@ -107,10 +122,35 @@ class Application:
         imageLib.imageSize = value
 
     @property
+    def grayScale(self):
+        return imageLib.grayScale
+    @grayScale.setter
+    def grayScale(self, value):
+        if not np.array_equal(value, imageLib.grayScale):
+            self.image = None
+            self.lastShowEvent = None
+            if self.window is not None:
+                self.window.updateSaveStatus()
+        imageLib.grayScale = np.array(value)
+
+    @property
+    def grayScaleLength(self):
+        return imageLib.grayScaleLength
+    @grayScaleLength.setter
+    def grayScaleLength(self, value):
+        if value != imageLib.grayScaleLength:
+            self.image = None
+            self.lastShowEvent = None
+            if self.window is not None:
+                self.window.updateSaveStatus()
+        imageLib.grayScaleLength = value
+
+    @property
     def saveStatus(self):
         return self.lastShowEvent is not None
 
     def __init__(self):
+        self.window = None
         self.images = []
         self.settingsStatus = None
         self.runningStatus = None
@@ -133,8 +173,9 @@ class Application:
         self.debug = True
         self.debugBundles = 1000
 
-        self.window = None
-        self.showBundles = 100
+        # self.grayScaleLenght = 256
+        self.grayScale = np.array([0, 0.2, 0.3, 0.4, 1])
+        self.showBundles = 10
 
         self.lastShowEvent = None
         self.debugHist = ''
@@ -163,18 +204,21 @@ class Application:
             self.debugHist += entry + "\n"
 
         if self.window and step != 0 and (step % self.showBundles == 0 or isLast):
-            stateRadonTrans = radon.Radon(state, self.theta, self.radonAngleBounds)
-            stateSinogram = stateRadonTrans.transform()
-            error = rms.error(self.image, state)
+            err = error.rms(self.image, state)
 
             saveStatusUpade = self.saveStatus == False
+            show = self.annealing.cost.descriptor.show(state)
+            if show is None:
+                stateRadonTrans = radon.Radon(state, self.theta, self.radonAngleBounds)
+                show = stateRadonTrans.transform()
 
             self.lastShowEvent = event.ShowEvent(
                 recon=state,
-                reconRadon=stateSinogram,
+                reconRadon=show,
                 step=step,
-                error=error,
+                error=err,
                 cost=cost,
+                startedAt=self.annealing.startedAt
             )
             self.window.triggerEvent(self.lastShowEvent)
             if saveStatusUpade:
@@ -184,6 +228,7 @@ class Application:
     def applySettings(self, settings):
         if self.annealing is not None and self.annealing.running:
             raise ValueError('Kill the previous run first!')
+
         def toClassKey(key):
             str = settings[key]
             first = str[:1].lower() + str[1:].replace(' ', '')
@@ -191,7 +236,12 @@ class Application:
             return first + second
 
         self.settings = settings
+        self.showBundles = settings['showBundles']
         self.theta = settings['theta']
+        if settings['grayScaleType'] == 'List':
+            self.grayScale = settings['grayScale']
+        else:
+            self.grayScaleLength = settings['grayScaleLength']
         self.radonAngleBounds = (settings['radonAngleBoundsMin'], settings['radonAngleBoundsMax'])
         self.imageSize = settings['imageSize']
         if settings['imagePath'] != '':
@@ -201,11 +251,14 @@ class Application:
 
         self.debugHist = ''
         self.annealing = Annealing(self)
+        self.annealing.threadPoolSize = settings['threadPoolSize']
+        self.annealing.threadLength = settings['threadLength']
         self.annealing.accept = Accept()
         self.annealing.temperature = self.applyClass('temperature', settings)
         self.annealing.start = self.applyClass(toClassKey('start'), settings)
         self.annealing.iterator = self.applyClass(toClassKey('iterator'), settings)
-        self.annealing.cost = self.applyClass(toClassKey('cost'), settings)
+        self.annealing.cost = self.applyClass('cost', settings)
+        self.annealing.cost.descriptor = self.applyClass(toClassKey('descriptor'), settings)
         self.annealing.neighbour = self.applyClass('neighbour', settings)
         self.annealing.neighbour.position = self.applyClass(toClassKey('position'), settings)
         self.annealing.neighbour.color = self.applyClass(toClassKey('color'), settings)
@@ -231,6 +284,9 @@ class Application:
         filler = ShapeFiller(shapeClassesWithBounds)
 
         return filler
+
+    def applyCooccDescriptor(self, c, settings):
+        return CooccDescriptor(settings['cooccDescriptorDistances'], settings['cooccDescriptorAngles'], self.grayScale)
 
     def applyClass(self, c, settings):
         applyFunction = getattr(self, "apply" + c[:1].upper() + c[1:], None)
@@ -304,8 +360,14 @@ class Application:
         histFile.close()
 
 
-    def load(self, input):
+    def load(self, input=None):
+        if input is None:
+            input = assets.getJson()
         self.settings = json.loads(input)
+        self.window.setActiveSite(SettingsSite)
+        self.window.activeSite.refreshValues()
 
+    def test(self):
+        self.window.setActiveSite(DescriptorsSite)
 
 app = Application.getInstance()

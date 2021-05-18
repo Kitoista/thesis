@@ -1,9 +1,12 @@
 import tkinter as tk
 import numpy as np
+import time
+import datetime
+import math
 
 from ... import assets, defaults
 from .. import site, imageLabel
-from app.error import rms
+from app.error import error
 from ...event import ShowEvent, ImageUpdatedEvent
 
 class Annealing(site.Site):
@@ -52,15 +55,13 @@ class Annealing(site.Site):
         self.img_diff = imageLabel.ImageLabel(self.diffFrame, icon = assets.placeholder)
         self.img_diff.pack()
 
-        # self.ready = True
-
         self.setOriginal(self.app.image, self.app.sinogram)
         if self.app.lastShowEvent is not None:
             self.onEvent(self.app.lastShowEvent)
 
     def onEvent(self, e):
         if isinstance(e, ShowEvent):
-            self.update(e.recon, e.reconRadon, e.step, e.cost)
+            self.update(e.recon, e.reconRadon, e.step, e.cost, e.startedAt)
         if isinstance(e, ImageUpdatedEvent):
             self.setOriginal(self.app.image, self.app.sinogram)
 
@@ -68,17 +69,17 @@ class Annealing(site.Site):
         self.replaceImage(self.img_original, self.originalFrame, original)
         self.replaceImage(self.img_originalRadon, self.originalRadonFrame, originalRadon)
 
-    def update(self, recon, reconRadon, step, cost):
-        # if not self.ready:
-        #     return
+    def update(self, recon, reconRadon, step, cost, startedAt):
+        if not self.ready:
+            return
         self.replaceImage(self.img_recon, self.reconFrame, recon)
         self.replaceImage(self.img_reconRadon, self.reconRadonFrame, reconRadon)
         diff = self.app.image - recon
         self.replaceImage(self.img_diff, self.diffFrame, diff)
 
-        error = rms.error(self.app.image, recon)
+        err = error.rms(self.app.image, recon)
 
-        self.logText.set(f"#{step+1} cost: {cost:.3g} error: {error:.3g}")
+        self.logText.set(f"#{step+1} cost: {cost:.3g} error: {err:.3g} time: {str(datetime.timedelta(seconds=(math.floor(time.time() - startedAt))))}")
 
     def replaceImage(self, image, frame, icon):
         if icon is not None:
